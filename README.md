@@ -23,6 +23,7 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 Usage
+
 Open the app and use the intuitive interface to perform calculations. Tap on the numbers and operators to build your expression, and press the "=" button to get the result. Use the "+/-" button to toggle the current number sign and the "%" button to calculate percentages.
 
 Contributing
