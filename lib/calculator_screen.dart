@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ios_calculator/button_value.dart';
 
+// Stateful widget for the calculator screen
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});
 
@@ -8,110 +9,206 @@ class CalculatorScreen extends StatefulWidget {
   State<CalculatorScreen> createState() => _CalculatorScreenState();
 }
 
-String number1 = ''; // for dot and zero to 9 values
-String operand = ''; // for operators
-String number2 = ''; //for dot and zero to 9
+// Global variables to hold the first number, operator, and second number
+String number1 = ''; // Stores the first number
+String operand = ''; // Stores the operator (e.g., +, -, *, /)
+String number2 = ''; // Stores the second number
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
   @override
   Widget build(BuildContext context) {
-    final screenSized = MediaQuery.of(context).size;
+    final screenSized = MediaQuery.of(context).size; // Get the screen size
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            //output
-            Expanded(
-              child: SingleChildScrollView(
-                reverse: true,
-                child: Container(
-                  alignment: Alignment.bottomRight,
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    '$number1$operand$number2'.isEmpty
-                        ? '0'
-                        : '$number1$operand$number2',
-                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.end,
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // Output display area
+              Expanded(
+                child: SingleChildScrollView(
+                  reverse: true, // Scroll to the bottom automatically
+                  child: Container(
+                    alignment: Alignment
+                        .bottomRight, // Align output to the bottom-right
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      '$number1$operand$number2'
+                              .isEmpty // Display '0' if no input
+                          ? '0'
+                          : '$number1$operand$number2',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.end, // Align text to the end
+                    ),
                   ),
                 ),
               ),
-            ),
-            //button
-            Wrap(
-              children: Btn.buttonValues
-                  .map(
-                    (value) => SizedBox(
-                      width: value == Btn.zero
-                          ? screenSized.width / 2
-                          : screenSized.width / 4,
-                      height: screenSized.width / 5,
-                      child: buildbutton(value),
-                    ),
-                  )
-                  .toList(),
-            )
-          ],
+              // Button layout using Wrap
+              Wrap(
+                children: Btn.buttonValues
+                    .map(
+                      (value) => SizedBox(
+                        width: value == Btn.zero // Handle zero button size
+                            ? screenSized.width / 2
+                            : screenSized.width / 4,
+                        height: screenSized.width / 5,
+                        child: buildbutton(
+                            value), // Create a button for each value
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // Function to handle button tap events
   void onBtnTap(String value) {
-    //Check if the value is not a number
-    if (value != Btn.dot && int.tryParse(value) == null) {
-      //Checks if the values needed for calculation to take place
-      // is intact
-      if (operand.isNotEmpty && number2.isNotEmpty) {
-        //calculatate before assigning the value to operand
-        //TODO
-      }
-
-      operand += value;
+    if (value == Btn.clr) {
+      clearAll(); // Clear all values if "C" is pressed
+      return;
     }
 
-    //ensures that where there is not dot or operand,
-    //user can continously add more values to number1
-    //however, if an operand is added, user can no
-    //longer add value to number1
-
-    else if (number1.isEmpty || operand.isEmpty) {
-      //Ensures that dot is only added to a value once
-      if (value == Btn.dot && number1.contains(Btn.dot)) return;
-
-      //allows user to assign '0.' to number1 just by pressing '.' button
-      if (value == Btn.dot && (number1.isEmpty || number1.contains(Btn.dot))) {
-        value = '0.';
-      }
-
-      //now that we are done with various conditions of number1,
-      //we can now assign value to it
-
-      number1 += value;
+    if (value == Btn.plusOrMinus) {
+      toggleSign(); // Toggle sign if "+/-" is pressed
+      return;
     }
 
-    //now we handle number2
-
-    else if (number2.isEmpty || operand.isNotEmpty) {
-      //Ensures that dot is only added to a value once
-      if (value == Btn.dot && number2.contains(Btn.dot)) return;
-
-      //allows user to assign '0.' to number1 just by pressing '.' button
-      if (value == Btn.dot && (number2.isEmpty || number2.contains(Btn.dot))) {
-        value = '0.';
-      }
-
-      //now that we are done with various conditions of number1,
-      //we can now assign value to it
-
-      number2 += value;
+    if (value == Btn.percent) {
+      convertToPercent(); // Convert to percentage if "%" is pressed
+      return;
     }
 
-    setState(() {});
+    if (value == Btn.calculate) {
+      calculate(); // Perform calculation if "=" is pressed
+      return;
+    }
+
+    positioningValues(value); // Handle other button presses
   }
 
-  Widget buildbutton(value) {
+  // Function to perform the calculation
+  void calculate() {
+    // Ensure all required values are available
+    if (number1.isEmpty || operand.isEmpty || number2.isEmpty) return;
+
+    final double num1 = double.parse(number1); // Parse first number
+    final double num2 = double.parse(number2); // Parse second number
+
+    dynamic result;
+
+    String displayError = "can't divide by 0"; // Prevent division by zero
+
+    // Perform the appropriate operation based on the operator
+    switch (operand) {
+      case Btn.add:
+        result = num1 + num2;
+        break;
+      case Btn.subtract:
+        result = num1 - num2;
+        break;
+      case Btn.multiply:
+        result = num1 * num2;
+        break;
+      case Btn.divide:
+        if (number2 == '0') {
+          result = displayError; // Prevent division by zero
+        } else {
+          result = num1 / num2;
+        }
+        break;
+    }
+
+    // Update the display with the result
+    setState(() {
+      number1 = '$result';
+      // Remove trailing ".0" if present
+      if (number1.endsWith('.0')) {
+        number1 = number1.substring(0, number1.length - 2);
+      }
+      operand = '';
+      number2 = '';
+    });
+  }
+
+  // Function to convert the current value to a percentage
+  void convertToPercent() {
+    if (number1.isNotEmpty && number2.isNotEmpty) {
+      calculate(); // Calculate first if both numbers are present
+    }
+    if (operand.isEmpty) {
+      if (number1.isNotEmpty) {
+        final number = double.parse(number1);
+        setState(() {
+          number1 = '${number / 100}'; // Convert first number to percentage
+        });
+      }
+    } else {
+      if (number2.isNotEmpty) {
+        final number = double.parse(number2);
+        setState(() {
+          number2 = '${number / 100}'; // Convert second number to percentage
+        });
+      }
+    }
+  }
+
+  // Function to toggle the sign of the current value
+  void toggleSign() {
+    setState(() {
+      if (operand.isEmpty && number1.isNotEmpty) {
+        // Toggle sign of the first number
+        number1 = number1.startsWith('-') ? number1.substring(1) : '-$number1';
+      } else if (number2.isNotEmpty) {
+        // Toggle sign of the second number
+        number2 = number2.startsWith('-') ? number2.substring(1) : '-$number2';
+      }
+    });
+  }
+
+  // Function to clear all inputs
+  void clearAll() {
+    setState(() {
+      number1 = '';
+      operand = '';
+      number2 = '';
+    });
+  }
+
+  // Function to handle number and operator positioning
+  void positioningValues(String value) {
+    // If the value is an operator (not a number or dot)
+    if (value != Btn.dot && int.tryParse(value) == null) {
+      if (operand.isNotEmpty && number2.isNotEmpty) {
+        calculate(); // Calculate if there's already an operation pending
+        operand = value; // Set new operator
+      } else {
+        operand = value; // Set operator
+      }
+    } else {
+      if (operand.isEmpty) {
+        if (value == Btn.dot && number1.contains(Btn.dot))
+          return; // Prevent multiple dots
+        number1 += value; // Append value to the first number
+      } else {
+        if (value == Btn.dot && number2.contains(Btn.dot))
+          return; // Prevent multiple dots
+        number2 += value; // Append value to the second number
+      }
+    }
+
+    setState(() {}); // Update UI
+  }
+
+  // Function to build a button with the given value
+  Widget buildbutton(String value) {
     return Padding(
       padding: const EdgeInsets.all(3.0),
       child: Material(
@@ -120,26 +217,27 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             : [Btn.divide, Btn.multiply, Btn.subtract, Btn.add, Btn.calculate]
                     .contains(value)
                 ? Colors.orange
-                : const Color.fromARGB(255, 49, 44, 44),
+                : const Color.fromARGB(255, 49, 44, 44), // Set button color
         clipBehavior: Clip.hardEdge,
         shape: value == Btn.zero
             ? OutlineInputBorder(
                 borderRadius: BorderRadius.circular(100),
                 borderSide: BorderSide(color: Colors.black),
-              )
+              ) // Shape for zero button
             : CircleBorder(
                 side: BorderSide(color: Colors.black),
-              ),
+              ), // Shape for other buttons
         child: InkWell(
-          onTap: () => onBtnTap(value),
+          onTap: () => onBtnTap(value), // Handle tap event
           child: Center(
             child: Text(
               value,
               style: TextStyle(
-                  fontSize: 30,
-                  color: [Btn.clr, Btn.plusOrMinus, Btn.percent].contains(value)
-                      ? Colors.black
-                      : Colors.white),
+                fontSize: 30,
+                color: [Btn.clr, Btn.plusOrMinus, Btn.percent].contains(value)
+                    ? Colors.black
+                    : Colors.white, // Set text color
+              ),
             ),
           ),
         ),
