@@ -30,6 +30,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 child: SingleChildScrollView(
                   reverse: true, // Scroll to the bottom automatically
                   child: GestureDetector(
+                    //the delete is controled by double tapping the output
                     onDoubleTap: deleteTheCharc,
                     child: Container(
                       alignment: Alignment
@@ -72,6 +73,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
+// Function to handle delete call
   void deleteTheCharc() {
     setState(() {
       if (number2.isNotEmpty) {
