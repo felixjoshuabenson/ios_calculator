@@ -29,20 +29,23 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   reverse: true, // Scroll to the bottom automatically
-                  child: Container(
-                    alignment: Alignment
-                        .bottomRight, // Align output to the bottom-right
-                    padding: EdgeInsets.all(20),
-                    child: Text(
-                      '$number1$operand$number2'
-                              .isEmpty // Display '0' if no input
-                          ? '0'
-                          : '$number1$operand$number2',
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
+                  child: GestureDetector(
+                    onDoubleTap: deleteTheCharc,
+                    child: Container(
+                      alignment: Alignment
+                          .bottomRight, // Align output to the bottom-right
+                      padding: EdgeInsets.all(20),
+                      child: Text(
+                        '$number1$operand$number2'
+                                .isEmpty // Display '0' if no input
+                            ? '0'
+                            : '$number1$operand$number2',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.end, // Align text to the end
                       ),
-                      textAlign: TextAlign.end, // Align text to the end
                     ),
                   ),
                 ),
@@ -67,6 +70,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         ),
       ),
     );
+  }
+
+  void deleteTheCharc() {
+    setState(() {
+      if (number2.isNotEmpty) {
+        number2 = number2.substring(0, number2.length - 1);
+      } else if (operand.isNotEmpty) {
+        operand = '';
+      } else if (number1.isNotEmpty) {
+        number1 = number1.substring(0, number1.length - 1);
+      }
+    });
   }
 
   // Function to handle button tap events
