@@ -34,13 +34,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     child: Container(
                       alignment: Alignment
                           .bottomRight, // Align output to the bottom-right
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       child: Text(
                         '$number1$operand$number2'
                                 .isEmpty // Display '0' if no input
                             ? '0'
                             : '$number1$operand$number2',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
                         ),
@@ -209,12 +209,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       }
     } else {
       if (operand.isEmpty) {
-        if (value == Btn.dot && number1.contains(Btn.dot))
+        if (value == Btn.dot && number1.contains(Btn.dot)) {
           return; // Prevent multiple dots
+        }
         number1 += value; // Append value to the first number
       } else {
-        if (value == Btn.dot && number2.contains(Btn.dot))
+        if (value == Btn.dot && number2.contains(Btn.dot)) {
           return; // Prevent multiple dots
+        }
         number2 += value; // Append value to the second number
       }
     }
@@ -237,9 +239,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         shape: value == Btn.zero
             ? OutlineInputBorder(
                 borderRadius: BorderRadius.circular(100),
-                borderSide: BorderSide(color: Colors.black),
+                borderSide: const BorderSide(color: Colors.black),
               ) // Shape for zero button
-            : CircleBorder(
+            : const CircleBorder(
                 side: BorderSide(color: Colors.black),
               ), // Shape for other buttons
         child: InkWell(
